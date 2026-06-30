@@ -10,6 +10,7 @@
   "max_inner_iter": 30,
   "cvx_solver_name": "mosek",
   "cvx_precision_name": "high",
+  "method": "CON",
   "verbose": true,
   "figure_visible": "on",
   "save_fig_files": true

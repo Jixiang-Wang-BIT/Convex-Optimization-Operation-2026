@@ -35,6 +35,7 @@ params.max_outer_iter     = cfg.max_outer_iter;
 params.max_inner_iter     = cfg.max_inner_iter;
 
 % 求解器与输出设置
+params.method              = cfg.method;           % "CON" 或 "NLP"
 params.cvx_solver_name    = cfg.cvx_solver_name;
 params.cvx_precision_name = cfg.cvx_precision_name;
 params.verbose            = cfg.verbose;
