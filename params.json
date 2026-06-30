@@ -10,7 +10,7 @@
   "max_inner_iter": 30,
   "cvx_solver_name": "sdpt3",
   "cvx_precision_name": "high",
-  "method": "CON",
+  "method": "NLP",
   "verbose": true,
   "figure_visible": "on",
   "save_fig_files": true
