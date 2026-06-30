@@ -8,7 +8,7 @@
   "eps_r": 0.1,
   "max_outer_iter": 20,
   "max_inner_iter": 30,
-  "cvx_solver_name": "mosek",
+  "cvx_solver_name": "sdpt3",
   "cvx_precision_name": "high",
   "method": "CON",
   "verbose": true,
