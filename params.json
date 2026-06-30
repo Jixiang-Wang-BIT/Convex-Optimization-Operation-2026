@@ -1,0 +1,16 @@
+{
+  "N": 81,
+  "vmax": 10,
+  "amax": 15,
+  "phi_max_deg": 40,
+  "g_vec": [0, 0, -9.807],
+  "eps_t": 1e-3,
+  "eps_r": 0.1,
+  "max_outer_iter": 20,
+  "max_inner_iter": 30,
+  "cvx_solver_name": "mosek",
+  "cvx_precision_name": "high",
+  "verbose": true,
+  "figure_visible": "on",
+  "save_fig_files": true
+}

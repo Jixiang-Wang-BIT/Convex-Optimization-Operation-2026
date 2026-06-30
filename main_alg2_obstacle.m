@@ -2,7 +2,7 @@
 clear all; clc;
 close all
 code_dir=fileparts(mfilename('fullpath')); addpath(code_dir);
-params=make_default_params(); obstacles=make_obstacles_case1();
+[params,obstacles]=load_scene_and_params('obstacle_case1');
 params.cvx_solver_name='sdpt3';
 r0=[0;0;10]; v0=[0;-10;0]; rf=[30;-30;14]; vf=[-10;0;0];
 waypoints=[0,14,20,40,30; 0,-6,-18,-24,-30; 10,11,12,13,14];

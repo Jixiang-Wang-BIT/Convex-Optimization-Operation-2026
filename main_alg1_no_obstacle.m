@@ -2,7 +2,7 @@
 clear all; clc;
 close all
 code_dir=fileparts(mfilename('fullpath')); addpath(code_dir);
-params=make_default_params();
+params=load_scene_and_params();
 
 cases(1)=struct('name','cruise_mission_1','r0',[0;0;15],'v0',[0;10;0], ...
     'rf',[30;30;15],'vf',[10;0;0]);

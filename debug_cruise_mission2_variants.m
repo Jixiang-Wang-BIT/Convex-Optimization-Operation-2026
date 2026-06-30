@@ -6,7 +6,7 @@ clear; clc; close all
 code_dir = fileparts(mfilename('fullpath'));
 addpath(code_dir);
 
-params = make_default_params();
+params = load_scene_and_params();
 params.verbose = false;
 params.figure_visible = 'off';
 params.save_fig_files = false;

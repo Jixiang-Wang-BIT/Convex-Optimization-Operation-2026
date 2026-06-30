@@ -1,0 +1,9 @@
+{
+  "name": "obstacle_case1",
+  "description": "Three elliptical-cylinder obstacles from paper Section VI.C — first obstacle-avoidance scenario.",
+  "obstacles": [
+    {"xc": 7,  "yc": -12, "ac": 7,  "bc": 4},
+    {"xc": 23, "yc": -10, "ac": 5,  "bc": 8},
+    {"xc": 25, "yc": -25, "ac": 10, "bc": 4}
+  ]
+}
