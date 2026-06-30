@@ -1,0 +1,4 @@
+solver,status,tf,ts,gap,outer_iterations,solve_time_total,max_r_dynamics_residual,max_vbar_dynamics_residual,message
+mosek,Solved,5.25405918034542,27.6051378736844,3.112401003591e-09,1,4.198923,5.92224602816203e-11,1.1463287943584e-14,""
+sdpt3,Inaccurate/Solved,5.25405917667312,27.6051378319876,4.52615722679184e-12,1,6.2321619,3.19185016555227e-14,8.75458550263112e-15,""
+sedumi,unavailable_or_failed,NaN,NaN,NaN,NaN,NaN,NaN,NaN,"Algorithm 1 第 1 次迭代失败，CVX 状态为 ""Failed""。"
