@@ -54,6 +54,45 @@ main_alg2_obstacle
 - `(tf,ts)` 外层迭代；
 - 各障碍在各节点的安全裕度。
 
+### 自定义场景脚本
+
+仓库还包含一组非论文场景，用于测试同一算法在自定义初末状态和自定义障碍物下的表现。这些脚本不属于论文第 VI 节报告结果，运行时默认只在命令行输出结果，不覆盖正式 `results/` 和 `figures/`。
+
+```matlab
+main_alg1_no_obstacle_personal
+```
+
+该脚本调用 Algorithm 1，包含 3 个自定义无障碍任务：
+
+| Case | r0 | rf | v0 | vf |
+| --- | --- | --- | --- | --- |
+| 1 | [0, 0, 40] | [10, 0, 0] | [0, 0, 0] | [0, 0, 0] |
+| 2 | [0, 0, 40] | [10, 0, 0] | [0, 0, 0] | [5, 5, 0] |
+| 3 | [0, 0, 40] | [10, 0, 5] | [0, 0, 0] | [0, -10, 0] |
+
+```matlab
+main_alg2_obstacle_personal
+```
+
+该脚本调用 Algorithm 2 和 `make_obstacles_case2.m`，测试自定义三维避障任务：
+
+| 参数 | 数值 |
+| --- | --- |
+| r0 | [0, 0, 0] |
+| rf | [40, 40, 40] |
+| v0 | [-1, 1, 2] |
+| vf | [5, 5, 5] |
+| 初始折线点 | [0,0,0]、[-6,18,10]、[5,35,20]、[20,45,30]、[40,40,40] |
+
+`make_obstacles_case2.m` 定义两个椭圆柱障碍物：
+
+| 障碍物 | center x | center y | ac | bc |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 10 | 10 | 10 | 10 |
+| 2 | 25 | 25 | 10 | 10 |
+
+如需保存自定义场景结果或图片，可在对应 `*_personal.m` 脚本中取消 `save` 和 `plot_*` 行的注释，并建议使用新的 case name，避免覆盖论文复现结果文件。
+
 MAT 数据保存在 `results/`，PNG 和 MATLAB FIG 图片保存在 `figures/`；目录不存在时自动创建。批处理时可在 `make_default_params.m` 中设置：
 
 ```matlab
@@ -88,6 +127,9 @@ phi = atan2(norm(a_xy), a_z)
 ## 文件说明
 
 - `make_default_params.m`：集中参数与输出目录；
+- `main_alg1_no_obstacle_personal.m`：Algorithm 1 自定义无障碍测试场景；
+- `main_alg2_obstacle_personal.m`：Algorithm 2 自定义避障测试场景；
+- `make_obstacles_case2.m`：自定义避障场景的两个椭圆柱障碍物；
 - `solve_alg1_cvx.m`：Algorithm 1 的 SOCP 和 sigma 外层更新；
 - `solve_alg2_cvx.m`：Algorithm 2 的 sigma 外层循环与障碍线性化内层循环；
 - `linearize_obstacles.m`：计算障碍函数的一阶上界；

@@ -6,14 +6,16 @@ function sol = solve_alg2_cvx(r0, v0, rf, vf, obstacles, r_init, params)
 validateattributes(r_init,{'numeric'},{'size',[3,params.N],'real','finite'});
 N = params.N; h = 1/(N-1); sigma = 0; r_guess = r_init;
 outer_history = repmat(struct('iteration',0,'sigma',0,'tf',nan,'ts',nan, ...
-    'gap',nan,'inner_iterations',0,'cvx_status','','solve_time',nan), ...
+    'gap',nan,'inner_iterations',0,'cvx_status','', ...
+    'solve_time',nan,'solve_time_source',''), ...
     1, params.max_outer_iter);
 inner_history = cell(1,params.max_outer_iter);
 successive_ground_tracks = cell(1,params.max_outer_iter);
 
 for k = 1:params.max_outer_iter
     local_hist = repmat(struct('iteration',0,'trajectory_change',nan, ...
-        'cvx_status','','cvx_optval',nan,'solve_time',nan,'r',[]), ...
+        'cvx_status','','cvx_optval',nan, ...
+        'solve_time',nan,'solve_time_source','','r',[]), ...
         1, params.max_inner_iter);
     tracks = cell(1,params.max_inner_iter+1);
     tracks{1} = r_guess(1:2,:);
@@ -21,13 +23,10 @@ for k = 1:params.max_outer_iter
 
     for j = 1:params.max_inner_iter
         lin = linearize_obstacles(r_guess,obstacles);
-        solve_clock = tic;
         if params.verbose
             fprintf('\nAlgorithm 2 外层 %d / 内层 %d，sigma=%.9g\n',k,j,sigma);
-            cvx_begin
-        else
-            cvx_begin quiet
         end
+        cvx_begin
             cvx_solver(params.cvx_solver_name)
             cvx_precision(params.cvx_precision_name)
             % tf 是 MATLAB 工具箱函数名，CVX 不允许同名优化变量。
@@ -56,8 +55,16 @@ for k = 1:params.max_outer_iter
                     norm(abar(1:2,n),2) <= tan(params.phi_max)*abar(3,n);
                     abar(3,n) >= 0;
                 end
-        cvx_end
-        solve_time = toc(solve_clock);
+        solve_clock = tic;
+        cvx_log = evalc('cvx_end');
+        toc(solve_clock);
+        if params.verbose
+            fprintf('%s',cvx_log);
+        end
+        [solve_time,solve_time_source] = parse_solver_time(cvx_log);
+        if params.verbose && ~isfinite(solve_time)
+            fprintf('Warning: solver time was not found in CVX log; no wall-clock time is counted.\n');
+        end
         tf = tf_cvx;
         ts = ts_cvx;
 
@@ -70,7 +77,7 @@ for k = 1:params.max_outer_iter
         trajectory_change = max(abs(r(:)-r_guess(:)));
         local_hist(j) = struct('iteration',j,'trajectory_change',trajectory_change, ...
             'cvx_status',cvx_status,'cvx_optval',cvx_optval, ...
-            'solve_time',solve_time,'r',r);
+            'solve_time',solve_time,'solve_time_source',solve_time_source,'r',r);
         tracks{j+1} = r(1:2,:);
         if params.verbose
             fprintf('轨迹变化量 %.3e m，tf %.6f s，gap %.3e s^2\n', ...
@@ -91,7 +98,8 @@ for k = 1:params.max_outer_iter
     gap = ts-tf^2;
     outer_history(k) = struct('iteration',k,'sigma',sigma,'tf',tf,'ts',ts, ...
         'gap',gap,'inner_iterations',j,'cvx_status',cvx_status, ...
-        'solve_time',sum([local_hist.solve_time]));
+        'solve_time',sum_finite([local_hist.solve_time]), ...
+        'solve_time_source','sum_inner_solver_logs');
     inner_history{k} = local_hist;
     successive_ground_tracks{k} = tracks;
 
@@ -107,7 +115,7 @@ for k = 1:params.max_outer_iter
         sol.obstacle_margin = obstacle_margins(r,obstacles);
         sol.min_obstacle_margin = min(sol.obstacle_margin(:));
         sol.min_margin_each_obstacle = min(sol.obstacle_margin,[],2);
-        sol.solve_time_total = sum([outer_history.solve_time]);
+        sol.solve_time_total = sum_finite([outer_history.solve_time]);
         sol.validation = physical_violations(sol,params);
         if sol.min_obstacle_margin < -1e-6
             error('最终轨迹障碍最小 margin=%.3e<0，未满足安全约束。',sol.min_obstacle_margin);
@@ -161,4 +169,29 @@ end
 
 function tf_ok=is_cvx_solved(status)
 tf_ok=strcmpi(strtrim(status),'Solved') || strcmpi(strtrim(status),'Inaccurate/Solved');
+end
+
+function [solver_time,source]=parse_solver_time(cvx_log)
+solver_time=nan;
+source='unavailable';
+tokens=regexp(cvx_log,'Optimizer terminated\.\s*Time:\s*([0-9.eE+-]+)','tokens');
+if ~isempty(tokens)
+    solver_time=str2double(tokens{end}{1});
+    source='mosek_log';
+    return;
+end
+tokens=regexp(cvx_log,'Total CPU time \(secs\)\s*=\s*([0-9.eE+-]+)','tokens');
+if ~isempty(tokens)
+    solver_time=str2double(tokens{end}{1});
+    source='sdpt3_log';
+end
+end
+
+function total=sum_finite(values)
+values=values(isfinite(values));
+if isempty(values)
+    total=nan;
+else
+    total=sum(values);
+end
 end

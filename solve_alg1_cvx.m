@@ -8,17 +8,15 @@ N = params.N;
 h = 1/(N-1);
 sigma = 0;
 history = repmat(struct('iteration',0,'sigma',0,'tf',nan,'ts',nan, ...
-    'gap',nan,'cvx_status','','cvx_optval',nan,'solve_time',nan), ...
+    'gap',nan,'cvx_status','','cvx_optval',nan, ...
+    'solve_time',nan,'solve_time_source',''), ...
     1, params.max_outer_iter);
 
 for k = 1:params.max_outer_iter
-    solve_clock = tic;
     if params.verbose
         fprintf('\nAlgorithm 1 外层迭代 %d，sigma=%.9g\n', k, sigma);
-        cvx_begin
-    else
-        cvx_begin quiet
     end
+    cvx_begin
         cvx_solver(params.cvx_solver_name)
         cvx_precision(params.cvx_precision_name)
         % MATLAB Control System Toolbox 已占用函数名 tf，CVX 不允许同名变量。
@@ -45,8 +43,16 @@ for k = 1:params.max_outer_iter
                 norm(abar(1:2,n),2) <= tan(params.phi_max)*abar(3,n);
                 abar(3,n) >= 0;
             end
-    cvx_end
-    solve_time = toc(solve_clock);
+    solve_clock = tic;
+    cvx_log = evalc('cvx_end');
+    toc(solve_clock);
+    if params.verbose
+        fprintf('%s',cvx_log);
+    end
+    [solve_time,solve_time_source] = parse_solver_time(cvx_log);
+    if params.verbose && ~isfinite(solve_time)
+        fprintf('Warning: solver time was not found in CVX log; no wall-clock time is counted.\n');
+    end
     tf = tf_cvx;
     ts = ts_cvx;
 
@@ -60,7 +66,7 @@ for k = 1:params.max_outer_iter
     gap = ts - tf^2;
     history(k) = struct('iteration',k,'sigma',sigma,'tf',tf,'ts',ts, ...
         'gap',gap,'cvx_status',cvx_status,'cvx_optval',cvx_optval, ...
-        'solve_time',solve_time);
+        'solve_time',solve_time,'solve_time_source',solve_time_source);
     if params.verbose
         fprintf('tf=%.9g, ts=%.9g, gap=%.3e, status=%s\n', tf, ts, gap, cvx_status);
     end
@@ -87,7 +93,7 @@ sol.r = r; sol.vbar = vbar; sol.abar = abar;
 sol.tf = tf; sol.ts = ts; sol.sigma = sigma;
 sol.gap = ts-tf^2; sol.history = history;
 sol.cvx_status = history(end).cvx_status;
-sol.solve_time_total = sum([history.solve_time]);
+sol.solve_time_total = sum_finite([history.solve_time]);
 sol.validation = physical_violations(sol,params);
 end
 
@@ -117,6 +123,31 @@ end
 
 function tf_ok = is_cvx_solved(status)
 tf_ok = strcmpi(strtrim(status),'Solved') || strcmpi(strtrim(status),'Inaccurate/Solved');
+end
+
+function [solver_time,source] = parse_solver_time(cvx_log)
+solver_time = nan;
+source = 'unavailable';
+tokens = regexp(cvx_log,'Optimizer terminated\.\s*Time:\s*([0-9.eE+-]+)','tokens');
+if ~isempty(tokens)
+    solver_time = str2double(tokens{end}{1});
+    source = 'mosek_log';
+    return;
+end
+tokens = regexp(cvx_log,'Total CPU time \(secs\)\s*=\s*([0-9.eE+-]+)','tokens');
+if ~isempty(tokens)
+    solver_time = str2double(tokens{end}{1});
+    source = 'sdpt3_log';
+end
+end
+
+function total = sum_finite(values)
+values = values(isfinite(values));
+if isempty(values)
+    total = nan;
+else
+    total = sum(values);
+end
 end
 
 function check_inputs(r0,v0,rf,vf,params)
