@@ -7,7 +7,7 @@ close all
 code_dir=fileparts(mfilename('fullpath')); addpath(code_dir);
 [params,obstacles]=load_scene_and_params('obstacle_case2');
 params.cvx_solver_name='Mosek';%Mosek  sdpt3
-
+params.cvx_precision_name = 'medium'; %精度调高了会无解
 r0=[0;0;0]; v0=[-1;1;2]; rf=[40;40;40]; vf=[5;5;5];
 waypoints = [
      0,  -6,    5,   20,   40;
