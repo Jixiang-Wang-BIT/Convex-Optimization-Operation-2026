@@ -45,10 +45,10 @@ for i=1:numel(cases)
     trajs{i}=traj;
 
     % 按方法区分保存文件名
-    save(fullfile(params.results_dir,[cases(i).name suffix '.mat']),'sol','traj','params');
+   % save(fullfile(params.results_dir,[cases(i).name suffix '.mat']),'sol','traj','params');
 
     % 单独绘图
-    plot_alg1_results(traj,sol,params,[cases(i).name suffix]);
+   % plot_alg1_results(traj,sol,params,[cases(i).name suffix]);
 
     summary(i)=struct('name',[cases(i).name suffix],'tf',sol.tf,'ts',sol.ts,'gap',sol.gap, ...
         'outer_iterations',numel(sol.history),'solve_time',sol.solve_time_total);

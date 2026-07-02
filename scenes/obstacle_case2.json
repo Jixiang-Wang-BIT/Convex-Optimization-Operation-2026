@@ -1,0 +1,8 @@
+{
+  "name": "obstacle_case2",
+  "description": "Custom two-obstacle scenario converted from make_obstacles_case2.m.",
+  "obstacles": [
+    {"xc": 10, "yc": 10, "ac": 10, "bc": 10},
+    {"xc": 25, "yc": 25, "ac": 10, "bc": 10}
+  ]
+}
